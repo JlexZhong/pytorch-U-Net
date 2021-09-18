@@ -1,109 +1,86 @@
-## Unet：U-Net: Convolutional Networks for Biomedical Image Segmentation目标检测模型在Pytorch当中的实现
----
-
-## 目录
-1. [性能情况 Performance](#性能情况)
-2. [所需环境 Environment](#所需环境)
-3. [注意事项 Attention](#注意事项)
-4. [文件下载 Download](#文件下载)
-5. [预测步骤 How2predict](#预测步骤)
-6. [训练步骤 How2train](#训练步骤)
-7. [miou计算 miou](#miou计算)
-8. [参考资料 Reference](#Reference)
-
+# Unet：U-Net: Convolutional Networks for Biomedical Image Segmentation语义分割模型在Pytorch当中的实现
 ## 性能情况
-**unet并不适合VOC此类数据集，其更适合特征少，需要浅层特征的医药数据集之类的。**
-| 训练数据集 | 权值文件名称 | 测试数据集 | 输入图片大小 | mIOU | 
-| :-----: | :-----: | :------: | :------: | :------: | 
-| VOC12+SBD | [unet_voc.pth](https://github.com/bubbliiiing/unet-pytorch/releases/download/v1.0/unet_voc.pth) | VOC-Val12 | 512x512| 55.11 | 
+**U-Net并不适合VOC此类数据集，其更适合特征少，需要浅层特征的医药数据集(CT-soil-rock-mixture)。**
+
+| 训练数据集 | 测试数据集 | 输入图片大小 | mIOU |
+| :-----: | :------: | :------: | :------: |
+| VOC12+SBD | VOC-Val12 | 512x512| 55.11 |
+| **CT-soil-rock-mixture** | **CT-soil-rock-mixture** | 512x512 | **92.01** |
 
 ## 所需环境
-torch==1.2.0    
-torchvision==0.4.0   
+- scipy==1.2.1
+- numpy==1.17.0
+- matplotlib==3.1.2
+- opencv_python==4.1.2.30
+- torch==1.2.0
+- torchvision==0.4.0
+- tqdm==4.60.0
+- Pillow==8.2.0
+- h5py==2.10.0
 
-## 注意事项
-unet_voc.pth是基于VOC拓展数据集训练的。  
-unet_medical.pth是使用示例的细胞分割数据集训练的。  
-在使用时需要注意区分。  
 
-## 文件下载
-训练所需的unet_voc.pth和unet_medical.pth可在百度网盘中下载。    
-链接: https://pan.baidu.com/s/1b-mQ7DjialleyagmuUWYMQ 提取码: 97pw    
 
-VOC拓展数据集的百度网盘如下：  
-链接: https://pan.baidu.com/s/1BrR7AUM1XJvPWjKMIy2uEw 提取码: vszf     
+## 目前效果展示
 
-## 预测步骤
-### 一、使用预训练权重
-#### a、VOC预训练权重
-1. 下载完库后解压，如果想要利用voc训练好的权重进行预测，在百度网盘或者release下载unet_voc.pth，放入model_data，运行即可预测。  
-```python
-img/street.jpg
-```    
-2. 在predict.py里面进行设置可以进行fps测试和video视频检测。      
-#### b、医药预训练权重
-1. 下载完库后解压，如果想要利用医药数据集训练好的权重进行预测，在百度网盘或者release下载unet_medical.pth，放入model_data，修改unet.py中的model_path和num_classes；
-```python
-_defaults = {
-    "model_path"        : 'model_data/unet_voc.pth',
-    "model_image_size"  : (512, 512, 3),
-    "num_classes"       : 21,
-    "cuda"              : True,
-    #--------------------------------#
-    #   blend参数用于控制是否
-    #   让识别结果和原图混合
-    #--------------------------------#
-    "blend"             : True
-}
+**训练数据集说明**：
 
-```
-2. 运行即可预测。  
-```python
-img/cell.png
-```
-### 二、使用自己训练的权重
-1. 按照训练步骤训练。    
-2. 在unet.py文件里面，在如下部分修改model_path、backbone和num_classes使其对应训练好的文件；**model_path对应logs文件夹下面的权值文件**。    
-```python
-_defaults = {
-    "model_path"        : 'model_data/unet_voc.pth',
-    "model_image_size"  : (512, 512, 3),
-    "num_classes"       : 21,
-    "cuda"              : True,
-    #--------------------------------#
-    #   blend参数用于控制是否
-    #   让识别结果和原图混合
-    #--------------------------------#
-    "blend"             : True
-}
-```
-3. 运行predict.py，输入    
-```python
-img/street.jpg
-```   
-4. 在predict.py里面进行设置可以进行fps测试和video视频检测。    
+格式：VOC
 
-## 训练步骤
-### 一、训练voc数据集
-1. 将我提供的voc数据集放入VOCdevkit中（无需运行voc2unet.py）。  
-2. 在train.py中设置对应参数，默认参数已经对应voc数据集所需要的参数了，所以只要修改backbone和model_path即可。  
-3. 运行train.py进行训练。  
+由于数据集标注的困难，并且无法使用之前标注了部分的Mask R-CNN 实例分割数据集，本次仅使用30张语义分割图像，数据增强到100张进行训练，得到的效果较好。
 
-### 二、训练自己的数据集
-1. 本文使用VOC格式进行训练。  
-2. 训练前将标签文件放在VOCdevkit文件夹下的VOC2007文件夹下的SegmentationClass中。    
-3. 训练前将图片文件放在VOCdevkit文件夹下的VOC2007文件夹下的JPEGImages中。    
-4. 在训练前利用voc2unet.py文件生成对应的txt。
-5. 注意修改train.py的num_classes为分类个数+1。  
-6. 运行train.py即可开始训练。  
+![](README.assets/display_result.png)
 
-### 三、训练医药数据集
-1. 下载VGG的预训练权重到model_data下面。  
-2. 按照默认参数运行train_medical.py即可开始训练。
+![](README.assets/display_result_2.png)
 
-## miou计算
-参考miou计算视频和博客。  
+![](README.assets/display_result_3.png)
+
+![](README.assets/display_result_4.png)
+
+![](README.assets/labels.png)
+
+## U-Net
+
+![](https://img-blog.csdnimg.cn/img_convert/f9d4d74fb52dd145e95f56a8a04cf265.png)
+
+自2015年以来，在生物医学图像分割领域，U-Net得到了广泛的应用，目前已达到四千多次引用。
+
+这个模型非常优雅，结构对称，全是卷积层，没有全连接。
+
+因为这个网络使用更少的数据，取得更好的效果
+
+所以我们修改并扩展这个网络。
+
+全卷积网络其实就是一个不断缩小特征图的卷积神经网络，只不过后面的一些层中，将pooling层换为unsampling操作了。
+
+为了使得分割结果更加精确，将高分辨率的特征图与与上采样后的低分辨率特征图进行合并。因此，分割结果就更加准确。
+
+## CT数据集特点
+
+- 图像语义较为简单、结构较为固定。由于砾石结构固定和语义信息没有特别丰富，所以高级语义信息和低级特征都显得很重要。
+- 数据量少。医学影像的数据获取相对难一些。所以我们设计的模型不宜多大，参数过多，很容易导致过拟合。
+
+## <u>如何解决医学图像的数据非常少的问题？</u>
+
+- 所以需要使用大量的数据增强，意思是在不实质性的增加数据的情况下，让有限的数据产生等价于更多数据的价值。
+- **数据增强**：几何变换、噪声、模糊、填充、亮度等等。
+
+## *<u>如何解决目标粘连问题？</u>*
+
+- 图像形态学操作？开运算，凸性分析......
+- 使用一个加权loss,使细胞之间的**缝隙**有较大的训练权重，是否可行？
+
+## 如何训练数据集
+1. 本文使用`VOC格式`进行训练。  
+2. 使用`lableme`制作自己的数据集，将图片和json文件放在`dataset/before`中，运行`json_to_dataset.py`。
+3. 训练前将标签文件放在`VOCdevkit`文件夹下的`VOC2007`文件夹下的`SegmentationClass`中。    
+4. 训练前将图片文件放在`VOCdevkit`文件夹下的`VOC2007`文件夹下的`JPEGImages`中。    
+5. 在训练前利用`voc2unet.py`文件生成对应的txt。
+6. 注意修改`train.py`的`num_classes`为分类个数+1。  
+7. 运行`train.py`即可开始训练。  
 
 ## Reference
-https://github.com/ggyyzm/pytorch_segmentation  
-https://github.com/bonlime/keras-deeplab-v3-plus
+https://github.com/bubbliiiing/unet-pytorch
+
+https://zhuanlan.zhihu.com/p/370931792
+
+https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/
