@@ -127,3 +127,24 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+
+
+
+
+
+
+# python project
+.vscode
+.spyproject
+__pycache__
+
+# pth
+*.pth
+
+.idea/
+.vscode/
+Inspect_model.ipynb
+
+
